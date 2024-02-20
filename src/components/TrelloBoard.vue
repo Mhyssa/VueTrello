@@ -2,10 +2,15 @@
 
 import {ref} from "vue";
 
-import type {Column} from '@/types'; 
+import type {Column, Task} from '@/types'; 
 
+import TrelloTask from "@/components/TrelloTask.vue";
 
-const colums = ref<Array<Column>>( [
+import Draggable from 'vuedraggable';
+
+import {useLocalStorage} from "@vueuse/core";
+
+const colums = useLocalStorage<Array<Column>>('trello-board', [
 
   {
 
@@ -61,22 +66,36 @@ tasks: [
 
 <template>
 
+        <Draggable 
+            v-model="colums" 
+            group="columns"
+            item-key="id"
+            :animation="150"
+            handle=".cursor-grab"
+            class="flex items-start space-x-4"
+        >
 
-<div class="flex items-start space-x-4">
+            <template #item="{element: column } : {element: Column}">
+                <div class="bg-gray-50 rounded shadow-orange-50 min-w-[250px] p-5">
+                    <div class="flex">
+                        <span class="cursor-grab mr-1">💥</span>
+                        <header class="cursor-grab font-bold mb-5">{{ column.title }}</header>
+                    </div>
+                    <Draggable 
+                        v-model="column.tasks" 
+                        group="tasks"
+                        item-key="id"
+                    >
 
-    <div v-for="column in colums" class="bg-gray-50 rounded shadow-orange-50 min-w-[250px] p-5">
+                        <template #item="{element: task } : {element: Task}">
+                            <TrelloTask :task="task" />
+                        </template>
 
-        <header class="font-bold mb-5">{{ column.title }}</header>
+                    </Draggable>
 
-        <div v-for="task in column.tasks" class="bg-white rounded shadow min-w-[250px] p-2 mb-2" :title="task.content">
-            {{ task.title }}
-        </div>
-        
-    </div>
-
-</div>
-
-
+                </div>
+            </template>
+        </Draggable>
 
 </template>
 
